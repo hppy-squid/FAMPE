@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "152644054",
+    "project_id": "fampe-fc2f8",
+    "storage_bucket": "fampe-fc2f8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:152644054:android:9f935d8d0f11f36d7d5c77",
+        "android_client_info": {
+          "package_name": "com.FAMPE.fampe"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDK9wMru7xJVcq7pAjvs9BTAn9Q0e9Pkao"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
