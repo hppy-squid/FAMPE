@@ -21,9 +21,7 @@ class MainActivity : ComponentActivity() {
         FirebaseApp.initializeApp(this)
         enableEdgeToEdge()
         setContent {
-            GoogleMap(
-                modifier = Modifier.fillMaxSize()
-            )
+            MapScreen()
         }
     }
 }
