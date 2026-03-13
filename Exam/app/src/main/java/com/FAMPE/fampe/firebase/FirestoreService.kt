@@ -2,6 +2,7 @@ package com.FAMPE.fampe.firebase
 
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.GeoPoint
 
 object FirestoreService {
 
@@ -9,9 +10,10 @@ object FirestoreService {
 
     fun updatePlayerLocation(userId: String, lat: Double, lng: Double) {
 
+        val location = GeoPoint(lat, lng)
+
         val playerData = mapOf(
-            "lat" to lat,
-            "lng" to lng,
+            "location" to location,
             "updatedAt" to FieldValue.serverTimestamp()
         )
 

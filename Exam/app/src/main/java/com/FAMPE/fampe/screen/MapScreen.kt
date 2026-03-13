@@ -1,4 +1,4 @@
-package com.FAMPE.fampe
+package com.FAMPE.fampe.screen
 
 import android.Manifest
 import android.content.pm.PackageManager
