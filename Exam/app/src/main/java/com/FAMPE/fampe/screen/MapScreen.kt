@@ -20,6 +20,7 @@ import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.firebase.auth.FirebaseAuth
 import com.google.maps.android.compose.*
 import android.util.Log
+import com.FAMPE.fampe.model.Player
 import com.FAMPE.fampe.viewmodel.MapViewModel
 
 @Composable
@@ -28,6 +29,7 @@ fun MapScreen() {
     val context = LocalContext.current
     val viewModel: MapViewModel = viewModel()
     var currentUser by remember { mutableStateOf(FirebaseAuth.getInstance().currentUser) }
+    var players by remember { mutableStateOf<List<Player>>(emptyList()) }
 
     // Authenticate anonymously if not logged in
     LaunchedEffect(Unit) {
@@ -106,6 +108,14 @@ fun MapScreen() {
                 }
             }
         }
+
+    }
+
+    LaunchedEffect(Unit) {
+
+        viewModel.listenToPlayers {
+            players = it
+        }
     }
 
     GoogleMap(
@@ -124,6 +134,23 @@ fun MapScreen() {
                 state = MarkerState(position = pos),
                 title = "Jag"
             )
+        }
+        players.forEach { player ->
+
+            if (player.id != currentUser?.uid) {
+
+                    val pos = LatLng(
+                        player.location.latitude,
+                        player.location.longitude
+                    )
+
+                Marker(
+                    state = MarkerState(position = pos),
+                    title = player.id
+                )
+
+            }
+
         }
     }
 }
