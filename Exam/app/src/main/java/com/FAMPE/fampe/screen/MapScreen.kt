@@ -115,6 +115,7 @@ fun MapScreen() {
 
         viewModel.listenToPlayers {
             players = it
+            Log.d("MapScreen", "Players list updated: ${it.size} players")
         }
     }
 

@@ -1,5 +1,6 @@
 package com.FAMPE.fampe.firebase
 
+import android.util.Log
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
@@ -14,11 +15,17 @@ object FirestoreService {
 
         val playerData = mapOf(
             "location" to location,
-            "updatedAt" to FieldValue.serverTimestamp()
+            "lastUpdated" to FieldValue.serverTimestamp()
         )
 
         db.collection("players")
             .document(userId)
             .set(playerData)
+            .addOnSuccessListener {
+                Log.d("FirestoreService", "Location updated successfully for $userId")
+            }
+            .addOnFailureListener { e ->
+                Log.e("FirestoreService", "Failed to update location for $userId", e)
+            }
     }
 }
