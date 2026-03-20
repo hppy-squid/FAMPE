@@ -20,7 +20,9 @@ import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.firebase.auth.FirebaseAuth
 import com.google.maps.android.compose.*
 import android.util.Log
+import com.FAMPE.fampe.model.GameObject
 import com.FAMPE.fampe.model.Player
+import com.FAMPE.fampe.service.GameObjectService
 import com.FAMPE.fampe.viewmodel.MapViewModel
 
 @Composable
@@ -28,8 +30,11 @@ fun MapScreen() {
 
     val context = LocalContext.current
     val viewModel: MapViewModel = viewModel()
+    val gameObjectService = remember { GameObjectService() }
     var currentUser by remember { mutableStateOf(FirebaseAuth.getInstance().currentUser) }
     var players by remember { mutableStateOf<List<Player>>(emptyList()) }
+    var objects by remember { mutableStateOf<List<GameObject>>(emptyList()) }
+
 
     // Authenticate anonymously if not logged in
     LaunchedEffect(Unit) {
@@ -117,6 +122,24 @@ fun MapScreen() {
             players = it
             Log.d("MapScreen", "Players list updated: ${it.size} players")
         }
+
+        viewModel.listenToObjects {
+            objects = it
+            Log.d("MapScreen", "Objects list updated: ${it.size} objects")
+        }
+    }
+
+    // Try to pick up nearby objects when position or objects change
+    LaunchedEffect(myPos, objects) {
+        val pos = myPos
+        val uid = currentUser?.uid
+        if (pos != null && uid != null) {
+            objects.forEach { obj ->
+                if (obj.active) {
+                    gameObjectService.tryPickupObject(pos.latitude, pos.longitude, obj, uid)
+                }
+            }
+        }
     }
 
     GoogleMap(
@@ -129,6 +152,20 @@ fun MapScreen() {
             myLocationButtonEnabled = hasPermission
         )
     ) {
+
+        objects.forEach { obj ->
+            if (obj.active) {
+                val pos = LatLng(
+                    obj.location.latitude,
+                    obj.location.longitude
+                )
+                Marker(
+                    state = MarkerState(position = pos),
+                    title = "Treasure",
+                    snippet = "+${obj.points} poäng"
+                )
+            }
+        }
 
         myPos?.let { pos ->
             Marker(
