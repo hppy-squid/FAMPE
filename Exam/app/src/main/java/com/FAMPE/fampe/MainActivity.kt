@@ -22,7 +22,9 @@ class MainActivity : ComponentActivity() {
         FirebaseApp.initializeApp(this)
         enableEdgeToEdge()
         setContent {
-            MapScreen()
+            FampeTheme {
+                MapScreen()
+            }
         }
     }
 }

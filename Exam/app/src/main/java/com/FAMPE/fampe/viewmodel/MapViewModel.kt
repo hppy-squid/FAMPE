@@ -15,6 +15,12 @@ class MapViewModel  : ViewModel() {
 
     fun updateLocation(userId: String, lat: Double, lng: Double) {
         repository.updateLocation(userId, lat, lng)
+
+        repository.getNearbyObjects(lat, lng) { objects ->
+            if (objects.size < 5) {
+                objRepository.spawnObjectNearPlayer(lat, lng, "currentSession")
+            }
+        }
     }
 
     fun listenToPlayers(onUpdate: (List<Player>) -> Unit) {

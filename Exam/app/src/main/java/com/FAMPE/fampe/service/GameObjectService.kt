@@ -24,23 +24,30 @@ class GameObjectService {
             distance
         )
 
-        if (distance[0] < 20 && gameObject.active) {
+        if (distance[0] >= 20 || !gameObject.active || gameObject.id.isBlank()) return
 
-            FirebaseFirestore.getInstance()
-                .collection("objects")
-                .document(gameObject.sessionId)
-                .update(
-                    mapOf(
-                        "active" to false,
-                        "foundBy" to userId
-                    )
-                )
+        val db = FirebaseFirestore.getInstance()
+        val objectRef = db.collection("objects").document(gameObject.id)
+        val playerRef = db.collection("players").document(userId)
 
-            // uppdatera score
-            FirebaseFirestore.getInstance()
-                .collection("players")
-                .document(userId)
-                .update("score", FieldValue.increment(gameObject.points.toLong()))
+        db.runTransaction { transaction ->
+
+            val snapshot = transaction.get(objectRef)
+            val isActive = snapshot.getBoolean("active") ?: false
+
+            if (!isActive) return@runTransaction false
+
+            transaction.update(objectRef, mapOf(
+                "active" to false,
+                "foundBy" to userId
+            ))
+
+            transaction.update(playerRef,
+                "score",
+                FieldValue.increment(gameObject.points.toLong())
+            )
+
+            true
         }
     }
 }
