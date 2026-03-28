@@ -24,6 +24,8 @@ import com.FAMPE.fampe.model.GameObject
 import com.FAMPE.fampe.model.Player
 import com.FAMPE.fampe.service.GameObjectService
 import com.FAMPE.fampe.viewmodel.MapViewModel
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.FAMPE.fampe.R
 
 @Composable
 fun MapScreen(modifier: Modifier = Modifier) {
@@ -123,6 +125,7 @@ fun MapScreen(modifier: Modifier = Modifier) {
             Log.d("MapScreen", "Players list updated: ${it.size} players")
         }
 
+
         viewModel.listenToObjects {
             objects = it
             Log.d("MapScreen", "Objects list updated: ${it.size} objects")
@@ -163,33 +166,58 @@ fun MapScreen(modifier: Modifier = Modifier) {
                     obj.location.latitude,
                     obj.location.longitude
                 )
+                val context = LocalContext.current
+                val customIconObj = remember {
+                    val bitmap = android.graphics.BitmapFactory.decodeResource(context.resources, R.drawable.chest_unopened)    // Force it to a specific size (e.g. 120px)
+                    val scaledBitmap = android.graphics.Bitmap.createScaledBitmap(bitmap, 120, 120, false)
+                    BitmapDescriptorFactory.fromBitmap(scaledBitmap)
+                }
+
                 Marker(
                     state = MarkerState(position = pos),
                     title = "Treasure",
-                    snippet = "+${obj.points} poäng"
+                    snippet = "+${obj.points} poäng",
+                    icon = customIconObj
                 )
             }
         }
 
         myPos?.let { pos ->
+            val context = LocalContext.current
+            val customIcon = remember {
+                val bitmap = android.graphics.BitmapFactory.decodeResource(context.resources, R.drawable.pumpkin_character)    // Force it to a specific size (e.g. 120px)
+                val scaledBitmap = android.graphics.Bitmap.createScaledBitmap(bitmap, 170, 170, false)
+                BitmapDescriptorFactory.fromBitmap(scaledBitmap)
+            }
             Marker(
                 state = MarkerState(position = pos),
-                title = "Jag"
+                title = "Jag",
+                icon = customIcon
             )
         }
         players.forEach { player ->
 
             if (player.id != currentUser?.uid) {
 
-                    val pos = LatLng(
-                        player.location.latitude,
-                        player.location.longitude
-                    )
+                val pos = LatLng(
+                    player.location.latitude,
+                    player.location.longitude
+                )
+                val context = LocalContext.current
+                val customIconPlayer = remember {
+                    val bitmap = android.graphics.BitmapFactory.decodeResource(context.resources, R.drawable.longleg_man)    // Force it to a specific size (e.g. 120px)
+                    val scaledBitmap = android.graphics.Bitmap.createScaledBitmap(bitmap, 170, 170, false)
+                    BitmapDescriptorFactory.fromBitmap(scaledBitmap)
+                }
+
 
                 Marker(
                     state = MarkerState(position = pos),
-                    title = player.id
-                )
+                    title = player.id,
+                    icon = customIconPlayer
+                    )
+
+
 
             }
 
