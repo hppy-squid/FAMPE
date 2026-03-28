@@ -130,14 +130,18 @@ fun MapScreen() {
     }
 
     // Try to pick up nearby objects when position or objects change
-    LaunchedEffect(myPos, objects) {
+    LaunchedEffect(myPos, objects, currentUser) {
         val pos = myPos
         val uid = currentUser?.uid
+
         if (pos != null && uid != null) {
             objects.forEach { obj ->
-                if (obj.active) {
-                    gameObjectService.tryPickupObject(pos.latitude, pos.longitude, obj, uid)
-                }
+                gameObjectService.tryPickupObject(
+                    pos.latitude,
+                    pos.longitude,
+                    obj,
+                    uid
+                )
             }
         }
     }
