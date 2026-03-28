@@ -9,8 +9,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.FAMPE.fampe.screen.AppScreen
+import com.FAMPE.fampe.screen.BottomScreen
 import com.FAMPE.fampe.screen.MapScreen
 import com.FAMPE.fampe.ui.theme.FampeTheme
 import com.google.firebase.FirebaseApp
@@ -21,9 +27,15 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(this)
         enableEdgeToEdge()
+
         setContent {
             FampeTheme {
-                MapScreen()
+                var currentScreen by remember { mutableStateOf(BottomScreen.MAP) }
+
+                AppScreen(
+                    currentScreen = currentScreen,
+                    onScreenSelected = { currentScreen = it }
+                )
             }
         }
     }

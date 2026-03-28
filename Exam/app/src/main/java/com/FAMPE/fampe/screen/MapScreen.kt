@@ -26,7 +26,7 @@ import com.FAMPE.fampe.service.GameObjectService
 import com.FAMPE.fampe.viewmodel.MapViewModel
 
 @Composable
-fun MapScreen() {
+fun MapScreen(modifier: Modifier = Modifier) {
 
     val context = LocalContext.current
     val viewModel: MapViewModel = viewModel()
@@ -147,7 +147,7 @@ fun MapScreen() {
     }
 
     GoogleMap(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState,
         properties = MapProperties(
             isMyLocationEnabled = hasPermission
