@@ -13,7 +13,7 @@ class GameObjectRepository {
 
         val db = FirebaseFirestore.getInstance()
 
-        val radius = 0.001 // ~100m
+        val radius = 0.2
 
         val randomLat = userLat + (Math.random() - 0.5) * radius
         val randomLng = userLng + (Math.random() - 0.5) * radius
