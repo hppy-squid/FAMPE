@@ -10,22 +10,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
-
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
-import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.tasks.CancellationTokenSource
-
 import com.google.firebase.auth.FirebaseAuth
 import com.google.maps.android.compose.*
 import android.util.Log
 import com.FAMPE.fampe.model.GameObject
 import com.FAMPE.fampe.model.Player
 import com.FAMPE.fampe.service.GameObjectService
+import com.FAMPE.fampe.location.LocationService
 import com.FAMPE.fampe.viewmodel.MapViewModel
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.FAMPE.fampe.R
+import com.google.android.gms.maps.CameraUpdateFactory
 
 @Composable
 fun MapScreen(modifier: Modifier = Modifier) {
@@ -33,6 +29,8 @@ fun MapScreen(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val viewModel: MapViewModel = viewModel()
     val gameObjectService = remember { GameObjectService() }
+    val locationService = remember { LocationService(context) }
+
     var currentUser by remember { mutableStateOf(FirebaseAuth.getInstance().currentUser) }
     var players by remember { mutableStateOf<List<Player>>(emptyList()) }
     var objects by remember { mutableStateOf<List<GameObject>>(emptyList()) }
@@ -79,45 +77,6 @@ fun MapScreen(modifier: Modifier = Modifier) {
         }
     }
 
-    // Fetch location (only after auth completes)
-    LaunchedEffect(hasPermission, currentUser) {
-
-        if (!hasPermission || myPos != null || currentUser == null) return@LaunchedEffect
-
-        val fused = LocationServices.getFusedLocationProviderClient(context)
-        val cts = CancellationTokenSource()
-
-        fused.getCurrentLocation(
-            Priority.PRIORITY_HIGH_ACCURACY,
-            cts.token
-        ).addOnSuccessListener { loc ->
-
-            loc?.let {
-
-                val p = LatLng(it.latitude, it.longitude)
-
-                myPos = p
-
-                cameraPositionState.move(
-                    CameraUpdateFactory.newLatLngZoom(p, 16f)
-                )
-
-                // Send location to Firebase
-                currentUser?.uid?.let { userId ->
-                    Log.d("MapScreen", "Sending location to Firebase: $userId, ${it.latitude}, ${it.longitude}")
-                    viewModel.updateLocation(
-                        userId,
-                        it.latitude,
-                        it.longitude
-                    )
-                } ?: run {
-                    Log.w("MapScreen", "No authenticated user, location not sent")
-                }
-            }
-        }
-
-    }
-
     LaunchedEffect(Unit) {
 
         viewModel.listenToPlayers {
@@ -129,6 +88,36 @@ fun MapScreen(modifier: Modifier = Modifier) {
         viewModel.listenToObjects {
             objects = it
             Log.d("MapScreen", "Objects list updated: ${it.size} objects")
+        }
+    }
+
+    DisposableEffect(hasPermission, currentUser) {
+        if (!hasPermission || currentUser == null) {
+            onDispose { }
+        } else {
+            var hasMovedCamera = false
+
+            locationService.startLocationUpdates { lat, lng ->
+                Log.d("MapScreen", "New location: $lat, $lng")
+
+                val p = LatLng(lat, lng)
+                myPos = p
+
+                currentUser?.uid?.let { userId ->
+                    viewModel.updateLocation(userId, lat, lng)
+                }
+
+                if (!hasMovedCamera) {
+                    cameraPositionState.move(
+                        CameraUpdateFactory.newLatLngZoom(p, 16f)
+                    )
+                    hasMovedCamera = true
+                }
+            }
+
+            onDispose {
+                locationService.stopLocationUpdates()
+            }
         }
     }
 
