@@ -202,7 +202,7 @@ fun MapScreen(modifier: Modifier = Modifier) {
 
                 Marker(
                     state = MarkerState(position = pos),
-                    title = player.id,
+                    title = player.name,
                     icon = customIconPlayer
                     )
 
