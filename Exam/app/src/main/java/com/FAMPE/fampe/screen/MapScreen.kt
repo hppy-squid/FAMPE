@@ -22,6 +22,9 @@ import com.FAMPE.fampe.viewmodel.MapViewModel
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.FAMPE.fampe.R
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.MapStyleOptions
+import kotlinx.coroutines.launch
+
 
 @Composable
 fun MapScreen(modifier: Modifier = Modifier) {
@@ -30,10 +33,20 @@ fun MapScreen(modifier: Modifier = Modifier) {
     val viewModel: MapViewModel = viewModel()
     val gameObjectService = remember { GameObjectService() }
     val locationService = remember { LocationService(context) }
+    val coroutineScope = rememberCoroutineScope()
+    var hasCenteredOnce by remember { mutableStateOf(false) }
+    val cameraPositionState = rememberCameraPositionState()
 
     var currentUser by remember { mutableStateOf(FirebaseAuth.getInstance().currentUser) }
     var players by remember { mutableStateOf<List<Player>>(emptyList()) }
     var objects by remember { mutableStateOf<List<GameObject>>(emptyList()) }
+
+    val mapStyle = remember {
+        MapStyleOptions.loadRawResourceStyle(
+            context,
+            R.raw.map_style
+        )
+    }
 
 
     // Authenticate anonymously if not logged in
@@ -68,7 +81,6 @@ fun MapScreen(modifier: Modifier = Modifier) {
 
     var myPos by remember { mutableStateOf<LatLng?>(null) }
 
-    val cameraPositionState = rememberCameraPositionState()
 
     // Ask permission once
     LaunchedEffect(Unit) {
@@ -95,11 +107,7 @@ fun MapScreen(modifier: Modifier = Modifier) {
         if (!hasPermission || currentUser == null) {
             onDispose { }
         } else {
-            var hasMovedCamera = false
-
             locationService.startLocationUpdates { lat, lng ->
-                Log.d("MapScreen", "New location: $lat, $lng")
-
                 val p = LatLng(lat, lng)
                 myPos = p
 
@@ -107,11 +115,19 @@ fun MapScreen(modifier: Modifier = Modifier) {
                     viewModel.updateLocation(userId, lat, lng)
                 }
 
-                if (!hasMovedCamera) {
-                    cameraPositionState.move(
-                        CameraUpdateFactory.newLatLngZoom(p, 16f)
-                    )
-                    hasMovedCamera = true
+                coroutineScope.launch {
+                    if (!hasCenteredOnce) {
+                        cameraPositionState.animate(
+                            update = CameraUpdateFactory.newLatLngZoom(p, 18f),
+                            durationMs = 1000
+                        )
+                        hasCenteredOnce = true
+                    } else {
+                        cameraPositionState.animate(
+                            update = CameraUpdateFactory.newLatLng(p),
+                            durationMs = 1000
+                        )
+                    }
                 }
             }
 
@@ -142,7 +158,8 @@ fun MapScreen(modifier: Modifier = Modifier) {
         modifier = modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState,
         properties = MapProperties(
-            isMyLocationEnabled = hasPermission
+            isMyLocationEnabled = hasPermission,
+            mapStyleOptions = mapStyle
         ),
         uiSettings = MapUiSettings(
             myLocationButtonEnabled = hasPermission
@@ -211,5 +228,6 @@ fun MapScreen(modifier: Modifier = Modifier) {
             }
 
         }
+
     }
 }
