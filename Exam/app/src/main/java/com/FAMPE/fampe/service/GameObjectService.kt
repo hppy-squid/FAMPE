@@ -1,5 +1,6 @@
 package com.FAMPE.fampe.service
 
+import android.util.Log
 import android.location.Location
 import com.FAMPE.fampe.model.GameObject
 import com.google.firebase.firestore.FieldValue
@@ -40,12 +41,16 @@ class GameObjectService {
             transaction.update(objectRef, mapOf(
                 "active" to false,
                 "foundBy" to userId
+
             ))
 
             transaction.update(playerRef,
                 "score",
                 FieldValue.increment(gameObject.points.toLong())
+
             )
+            Log.d("GameObjectService", "Object picked up by $userId")
+
 
             true
         }

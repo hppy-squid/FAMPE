@@ -64,20 +64,24 @@ exports.resetSession = onSchedule("every 1 hours", async (event) => {
 
       // 2. Reset objekt i objects kollektionen
       const snapshot = await db.collection("objects").get();
+      const chunks = [];
+      const size =500;
 
-      if (snapshot.empty) {
-        logger.info("No objects found to reset.");
-      } else {
+    // Split into chunks of 500 (Firestore batch limit)
+    for (let i = 0; i < snapshot.docs.length; i += size) {
+        chunks.push(snapshot.docs.slice(i, i + size));
+    }
+
+    for (const chunk of chunks) {
         const batch = db.batch();
-        snapshot.docs.forEach((doc) => {
-          batch.update(doc.ref, {
-            active: true,
-            foundBy: "",
-            sessionId: newSessionId,
-          });
+        chunk.forEach(doc => {
+            batch.update(doc.ref, {
+                active: true,
+                foundBy: "",
+                sessionId: newSessionId // This matches your new ViewModel logic
         });
-
-        await batch.commit();
+    });
+    await batch.commit();
         logger.info(`Successfully reset session and ${snapshot.size} objects.`);
       }
     } else {

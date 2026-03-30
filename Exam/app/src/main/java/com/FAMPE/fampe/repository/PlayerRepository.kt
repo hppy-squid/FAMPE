@@ -14,7 +14,7 @@ class PlayerRepository {
     fun getNearbyObjects(
         lat: Double,
         lng: Double,
-        sessionId: String = "currentSession",
+        sessionId: String,
         radiusMeters: Float = 100f,
         callback: (List<GameObject>) -> Unit
     ) {
