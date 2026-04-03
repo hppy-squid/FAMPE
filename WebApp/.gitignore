@@ -1,0 +1,7 @@
+# Ignorera API-nycklar
+config.js
+
+# Andra vanliga filer att ignorera
+node_modules/
+.env
+*.log
