@@ -24,6 +24,7 @@ import com.FAMPE.fampe.R
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.MapStyleOptions
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
 
 @Composable
@@ -40,6 +41,9 @@ fun MapScreen(modifier: Modifier = Modifier) {
     var currentUser by remember { mutableStateOf(FirebaseAuth.getInstance().currentUser) }
     var players by remember { mutableStateOf<List<Player>>(emptyList()) }
     var objects by remember { mutableStateOf<List<GameObject>>(emptyList()) }
+
+    var showPickupPopup by remember { mutableStateOf(false) }
+    var pickedUpPoints by remember { mutableStateOf(0) }
 
     val mapStyle = remember {
         MapStyleOptions.loadRawResourceStyle(
@@ -149,9 +153,32 @@ fun MapScreen(modifier: Modifier = Modifier) {
                     pos.longitude,
                     obj,
                     uid
-                )
+                ) { points ->
+                    pickedUpPoints = points
+                    showPickupPopup = true
+                }
             }
         }
+    }
+
+    LaunchedEffect(showPickupPopup) {
+        if (showPickupPopup) {
+            delay(3000)
+            showPickupPopup = false
+        }
+    }
+
+    if (showPickupPopup) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showPickupPopup = false },
+            confirmButton = {},
+            title = {
+                androidx.compose.material3.Text("🎉 Loot found!")
+            },
+            text = {
+                androidx.compose.material3.Text("+$pickedUpPoints poäng")
+            }
+        )
     }
 
     GoogleMap(
