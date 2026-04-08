@@ -13,7 +13,8 @@ class GameObjectService {
         playerLat: Double,
         playerLng: Double,
         gameObject: GameObject,
-        userId: String
+        userId: String,
+        onPickedUp: (Int) -> Unit
     ) {
 
         val distance = FloatArray(1)
@@ -54,5 +55,10 @@ class GameObjectService {
 
             true
         }
+         .addOnSuccessListener { success ->
+                if (success) {
+                    onPickedUp(gameObject.points)
+                }
+         }
     }
 }
